@@ -5,9 +5,9 @@ const getWebpackBabelReactIntlPluginDefinition = () => {
   return [
     require.resolve('babel-plugin-react-intl-auto'),
     {
-      removePrefix: 'src'
-    }
-  ]
+      removePrefix: 'src',
+    },
+  ];
 };
 
 module.exports = getWebpackBabelReactIntlPluginDefinition;

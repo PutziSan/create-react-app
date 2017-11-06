@@ -11,11 +11,12 @@ process.on('unhandledRejection', err => {
   throw err;
 });
 
-const paths = require('../config/paths');
 const glob = require('glob');
 const bluebird = require('bluebird');
-const babel = require('babel-core');
 const fs = require('fs');
+
+const paths = require('../config/paths');
+const readReactIntlMessagesFromFile = require('./utils/readReactIntlMessagesFromFile');
 
 const pGlob = bluebird.promisify(glob);
 const pReadFile = bluebird.promisify(fs.readFile);
@@ -50,34 +51,6 @@ const getOutput = () => {
     : paths.appSrc + '/translations';
 };
 
-// set filename for a https://github.com/babel/babel/issues/6523 and b so that the auto-generating-tool sets the correct name
-const getBabelTransformOptions = file => ({
-  presets: [
-    {
-      plugins: [
-        [
-          'react-intl-auto',
-          {
-            removePrefix: 'app/',
-          },
-        ],
-        require.resolve('babel-plugin-react-intl'),
-      ],
-    },
-    require.resolve('babel-preset-apoly-react-app'),
-  ],
-  filename: file,
-  babelrc: false,
-});
-
-const babelify = file => code =>
-  babel.transform(code, getBabelTransformOptions(file));
-
-const readReactIntlMessagesFromFile = file =>
-  pReadFile(file, 'utf8')
-    .then(babelify(file))
-    .then(transformed => transformed.metadata['react-intl'].messages);
-
 const mergeArrays = messageArrays =>
   messageArrays.reduce((acc, messageArray) => [...acc, ...messageArray], []);
 
@@ -95,34 +68,20 @@ const toMessageObject = (localeMessages, message) => ({
 const toJson = obj => JSON.stringify(obj, null, 2);
 
 const createNewLocaleMessages = (defaultMessages, locale) => localeMessages => {
-  if (locale === 'default') {
-    // recreate the default-messages every time
-    return defaultMessages.reduce(
-      (acc, cur) => Object.assign(acc, toMessageObject(localeMessages, cur)),
-      {}
-    );
-  }
+  // recreate every time
+  const checkedLocalMessages = locale === 'default' ? {} : localeMessages;
+  const messagesReducer = (acc, cur) =>
+    Object.assign(acc, toMessageObject(checkedLocalMessages, cur));
 
-  const res = localeMessages || {};
-
-  defaultMessages.forEach(({ id, defaultMessage }) => {
-    if (!res[id]) {
-      res[id] = defaultMessage;
-    }
-  });
-
-  return res;
+  return defaultMessages.reduce(messagesReducer, localeMessages);
 };
 
-const tapLog = p => {
-  console.log(p);
-  return p;
-};
+const printFinished = () =>
+  console.log('finished translations, they are stored in ' + getOutput());
 
 const mergeWithExistingMessagesForLocale = defaultMessages => locale =>
   getLocaleMessages(locale)
     .then(createNewLocaleMessages(defaultMessages, locale))
-    .then(tapLog)
     .then(messageObject =>
       pWriteFile(getOutputFilePath(locale), toJson(messageObject))
     );
@@ -135,9 +94,7 @@ pGlob(paths.appSrc + '/**/*.js')
       getLocales().map(mergeWithExistingMessagesForLocale(defaultMessages))
     )
   )
-  .then(() =>
-    console.log('finished translations, they are stored in ' + getOutput())
-  )
+  .then(printFinished)
   .catch(err => {
     console.log('Failed to compile i18n-files.\n');
     console.log(err);

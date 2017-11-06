@@ -178,6 +178,7 @@ module.exports = {
               presets: [require.resolve('babel-preset-react-app')],
               // @remove-on-eject-end
               compact: true,
+            plugins: [require('./customizations/babelPluginReactIntlAuto')()],
             },
           },
           // The notation here is somewhat confusing.

@@ -175,10 +175,9 @@ module.exports = {
             options: {
               // @remove-on-eject-begin
               babelrc: false,
-              presets: [require.resolve('babel-preset-react-app')],
+              presets: [require.resolve('babel-preset-apoly-react-app')],
               // @remove-on-eject-end
               compact: true,
-            plugins: [require('./customizations/babelPluginReactIntlAuto')()],
             },
           },
           // The notation here is somewhat confusing.
@@ -302,7 +301,7 @@ module.exports = {
       },
       mangle: {
         safari10: true,
-      },        
+      },
       output: {
         comments: false,
         // Turned on because emoji and regex is not minified properly using default

@@ -6,6 +6,15 @@
  */
 'use strict';
 
+const getWebpackBabelReactIntlPluginDefinition = () => {
+  return [
+    require.resolve('babel-plugin-react-intl-auto'),
+    {
+      removePrefix: 'src',
+    },
+  ];
+};
+
 const plugins = [
   // class { handleClick = () => { } }
   require.resolve('babel-plugin-transform-class-properties'),
@@ -34,6 +43,7 @@ const plugins = [
       regenerator: true,
     },
   ],
+  getWebpackBabelReactIntlPluginDefinition(),
 ];
 
 // This is similar to how `env` works in Babel:

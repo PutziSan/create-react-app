@@ -39,6 +39,7 @@ module.exports = function(
   appPackage.scripts = {
     start: 'react-scripts start',
     build: 'react-scripts build',
+    i18n: 'react-scripts i18n --locales en,de --output src/translations',
     test: 'react-scripts test --env=jsdom',
     eject: 'react-scripts eject',
   };

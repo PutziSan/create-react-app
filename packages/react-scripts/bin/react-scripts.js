@@ -21,7 +21,8 @@ switch (script) {
   case 'build':
   case 'eject':
   case 'start':
-  case 'test': {
+  case 'test':
+  case 'i18n': {
     const result = spawn.sync(
       'node',
       nodeArgs

@@ -14,13 +14,16 @@ process.on('unhandledRejection', err => {
 const glob = require('glob');
 const bluebird = require('bluebird');
 const fs = require('fs');
+const mkdirp = require('mkdirp');
+const path = require('path');
 
 const paths = require('../config/paths');
 const readReactIntlMessagesFromFile = require('./utils/readReactIntlMessagesFromFile');
+const translationFiles = require('./utils/translationFiles');
 
 const pGlob = bluebird.promisify(glob);
-const pReadFile = bluebird.promisify(fs.readFile);
 const pWriteFile = bluebird.promisify(fs.writeFile);
+const pMkdirp = bluebird.promisify(mkdirp);
 
 // Ensure environment variables are read.
 require('../config/env');
@@ -38,28 +41,24 @@ const getArgvValue = options => {
   return index >= 0 ? process.argv[index + 1] : null;
 };
 
+const isNil = val => val === undefined || val === null;
+const optionIsDefaultTrue = val => isNil(val) || (val != 0 && val !== 'false');
+
 const getLocales = () => {
   const localesString = getArgvValue(['--locales', '-l']);
   const locales = localesString ? localesString.split(',') : ['en'];
   return ['default', ...locales];
 };
 
-const getOutput = () => {
+const getOutputPath = () => {
   const outputPath = getArgvValue(['-o', '--output', '--build-dir']);
   return outputPath
-    ? paths.appPath + '/' + outputPath
-    : paths.appSrc + '/translations';
+    ? path.join(paths.appPath, outputPath)
+    : path.join(paths.appSrc, 'translations');
 };
 
-const mergeArrays = messageArrays =>
-  messageArrays.reduce((acc, messageArray) => [...acc, ...messageArray], []);
-
-const getOutputFilePath = locale => getOutput() + '/' + locale + '.json';
-
-const getLocaleMessages = locale =>
-  pReadFile(getOutputFilePath(locale), 'utf8')
-    .then(data => JSON.parse(data))
-    .catch(() => ({}));
+const makeFlatFile = () => optionIsDefaultTrue(getArgvValue('--flat'));
+const makeFlatTree = () => optionIsDefaultTrue(getArgvValue('--flat-tree'));
 
 const toMessageObject = (localeMessages, message) => ({
   [message.id]: localeMessages[message.id] || message.defaultMessage,
@@ -73,27 +72,87 @@ const createNewLocaleMessages = (defaultMessages, locale) => localeMessages => {
   const messagesReducer = (acc, cur) =>
     Object.assign(acc, toMessageObject(checkedLocalMessages, cur));
 
-  return defaultMessages.reduce(messagesReducer, localeMessages);
+  return defaultMessages.reduce(messagesReducer, checkedLocalMessages);
 };
 
 const printFinished = () =>
-  console.log('finished translations, they are stored in ' + getOutput());
+  console.log('finished translations, they are stored in ' + getOutputPath());
 
-const mergeWithExistingMessagesForLocale = defaultMessages => locale =>
-  getLocaleMessages(locale)
+const readDefaultMessagesForFileOnNonFlat = file => {
+  const nonFlatOutputPath = translationFiles.getNonFlatOutputFileDir(
+    getOutputPath(),
+    file
+  );
+  const getOutputFilePath = locale =>
+    translationFiles.getNonFlatOutputFilePath(getOutputPath(), locale, file);
+
+  const getTranslationFile = defaultMessages => locale =>
+    pMkdirp(nonFlatOutputPath)
+      .then(() =>
+        translationFiles.getNonFlatLocaleMessages(getOutputPath(), locale, file)
+      )
+      .then(createNewLocaleMessages(defaultMessages, locale))
+      .then(messages =>
+        pWriteFile(getOutputFilePath(locale), toJson(messages))
+      );
+
+  return readReactIntlMessagesFromFile(file).then(
+    defaultMessages =>
+      defaultMessages &&
+      defaultMessages.length > 0 &&
+      Promise.all(getLocales().map(getTranslationFile(defaultMessages)))
+  );
+};
+
+const flatArray = arr => arr.reduce((acc, cur) => [...acc, ...cur], []);
+
+const createNonFlatJsonTree = messages => {
+  const res = {};
+  const recursiveAssign = (key, val) => {
+    let current = res;
+    const keys = key.split('.');
+    keys.pop();
+    keys.forEach(key => {
+      current[key] = current[key] || {};
+      current = current[key];
+    });
+    current[key] = val;
+  };
+
+  Object.keys(messages).forEach(key => recursiveAssign(key, messages[key]));
+  return res;
+};
+
+const writeFlatTranslationFileForLocale = defaultMessages => locale =>
+  translationFiles
+    .getFlatLocaleMessages(getOutputPath(), locale)
     .then(createNewLocaleMessages(defaultMessages, locale))
-    .then(messageObject =>
-      pWriteFile(getOutputFilePath(locale), toJson(messageObject))
+    .then(
+      messages => (makeFlatTree() ? messages : createNonFlatJsonTree(messages))
+    )
+    .then(messages =>
+      pWriteFile(
+        translationFiles.getFlatOutputFilePath(getOutputPath(), locale),
+        toJson(messages)
+      )
     );
 
+const handleFiles = files => {
+  if (!makeFlatFile()) {
+    return Promise.all(files.map(readDefaultMessagesForFileOnNonFlat));
+  }
+
+  return Promise.all(files.map(readReactIntlMessagesFromFile))
+    .then(flatArray)
+    .then(defaultMessages =>
+      Promise.all(
+        getLocales().map(writeFlatTranslationFileForLocale(defaultMessages))
+      )
+    );
+};
+
 pGlob(paths.appSrc + '/**/*.js')
-  .then(files => Promise.all(files.map(readReactIntlMessagesFromFile)))
-  .then(mergeArrays)
-  .then(defaultMessages =>
-    Promise.all(
-      getLocales().map(mergeWithExistingMessagesForLocale(defaultMessages))
-    )
-  )
+  .then(handleFiles)
   .then(printFinished)
   .catch(err => {
     console.log('Failed to compile i18n-files.\n');

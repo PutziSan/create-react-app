@@ -26,8 +26,8 @@ const getBabelTransformOptions = () => ({
 });
 
 const readReactIntlMessagesFromFile = file =>
-  Promise.resolve()
-    .then(pTransformFile(file, getBabelTransformOptions()))
-    .then(transformed => transformed.metadata['react-intl'].messages);
+  pTransformFile(file, getBabelTransformOptions()).then(
+    transformed => transformed.metadata['react-intl'].messages
+  );
 
 module.exports = readReactIntlMessagesFromFile;

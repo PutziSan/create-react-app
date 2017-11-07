@@ -124,8 +124,8 @@ const createNonFlatJsonTree = messages => {
 };
 
 const writeFlatTranslationFileForLocale = defaultMessages => locale =>
-  translationFiles
-    .getFlatLocaleMessages(getOutputPath(), locale)
+  pMkdirp(getOutputPath())
+    .then(translationFiles.getFlatLocaleMessages(getOutputPath(), locale))
     .then(createNewLocaleMessages(defaultMessages, locale))
     .then(
       messages => (makeFlatTree() ? messages : createNonFlatJsonTree(messages))

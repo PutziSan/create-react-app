@@ -36,7 +36,7 @@ const initCachedReadFile = () => {
 const cachedReadFile = initCachedReadFile();
 
 const getFlatOutputFilePath = (outputPath, locale) =>
-  outputPath + '/' + locale + '.json';
+  path.join(outputPath, locale + '.json');
 
 const getNonFlatOutputFileDir = (outputPath, file) =>
   path.join(

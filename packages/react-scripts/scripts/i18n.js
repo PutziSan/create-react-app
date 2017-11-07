@@ -30,17 +30,19 @@ const manageTranslations = translationsManager.default;
 
 const toJson = obj => JSON.stringify(obj, null, 2);
 
-const getMessagesOutputPath = () =>
-  path.join(
-    paths.appPath,
-    argv.getArgvValue(['--message-output']) || 'messages'
-  );
+const getMessagesOutputPath = () => {
+  const outputPath = argv.getArgvValue(['--message-output']);
+  return outputPath
+    ? path.join(paths.appPath, outputPath)
+    : path.join(paths.appPath, 'meta', 'messages');
+};
 
-const getTranslationsOutputPath = () =>
-  path.join(
-    paths.appPath,
-    argv.getArgvValue(['--translations-output']) || 'translations'
-  );
+const getTranslationsOutputPath = () => {
+  const outputPath = argv.getArgvValue(['--translations-output']);
+  return outputPath
+    ? path.join(paths.appPath, outputPath)
+    : path.join(paths.appSrc, 'translations');
+};
 
 const getLocales = () => {
   const localesString = argv.getArgvValue(['--locales', '-l', '--languages']);

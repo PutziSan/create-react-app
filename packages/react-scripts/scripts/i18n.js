@@ -86,7 +86,7 @@ const extractDefaultMessages = () =>
     })
   );
 
-const getDefaultWhitelistFilePath = () =>
+const getDefaultLocaleWhitelistFilePath = () =>
   path.join(
     getTranslationsOutputPath(),
     `whitelist_${getDefaultLocale()}.json`
@@ -97,7 +97,7 @@ const whiteListForDefaultLanguage = () =>
   getDefaultMessages()
     .then(messages => Object.keys(messages))
     .then(messageIds =>
-      pWriteFile(getDefaultWhitelistFilePath(), toJson(messageIds))
+      pWriteFile(getDefaultLocaleWhitelistFilePath(), toJson(messageIds))
     );
 
 pGlob(paths.appSrc + '/**/*.js')

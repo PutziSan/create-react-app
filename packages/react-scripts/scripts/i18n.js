@@ -13,146 +13,96 @@ process.on('unhandledRejection', err => {
 
 const glob = require('glob');
 const bluebird = require('bluebird');
-const fs = require('fs');
-const mkdirp = require('mkdirp');
+const babel = require('babel-core');
+const translationsManager = require('react-intl-translations-manager');
 const path = require('path');
 
 const paths = require('../config/paths');
-const readReactIntlMessagesFromFile = require('./utils/readReactIntlMessagesFromFile');
-const translationFiles = require('./utils/translationFiles');
-
-const pGlob = bluebird.promisify(glob);
-const pWriteFile = bluebird.promisify(fs.writeFile);
-const pMkdirp = bluebird.promisify(mkdirp);
-
+const createReactIntlBabelConfig = require('./utils/createReactIntlBabelConfig');
+const argv = require('./utils/argv');
 // Ensure environment variables are read.
 require('../config/env');
 
-const getArgvIndex = options => {
-  const optionArray = Array.isArray(options) ? options : [options];
-  const res = optionArray
-    .map(option => process.argv.indexOf(option))
-    .filter(index => index >= 0);
-  return options.length ? res[0] : -1;
-};
+const pWriteFile = bluebird.promisify(require('fs').writeFile);
+const pGlob = bluebird.promisify(glob);
 
-const getArgvValue = options => {
-  const index = getArgvIndex(options);
-  return index >= 0 ? process.argv[index + 1] : null;
-};
-
-const isNil = val => val === undefined || val === null;
-const optionIsDefaultTrue = val => isNil(val) || (val != 0 && val !== 'false');
-
-const getLocales = () => {
-  const localesString = getArgvValue(['--locales', '-l']);
-  const locales = localesString ? localesString.split(',') : ['en'];
-  return ['default', ...locales];
-};
-
-const getOutputPath = () => {
-  const outputPath = getArgvValue(['-o', '--output', '--build-dir']);
-  return outputPath
-    ? path.join(paths.appPath, outputPath)
-    : path.join(paths.appSrc, 'translations');
-};
-
-const makeFlatFile = () => optionIsDefaultTrue(getArgvValue('--flat'));
-const makeFlatTree = () => optionIsDefaultTrue(getArgvValue('--flat-tree'));
-
-const toMessageObject = (localeMessages, message) => ({
-  [message.id]: localeMessages[message.id] || message.defaultMessage,
-});
+const manageTranslations = translationsManager.default;
 
 const toJson = obj => JSON.stringify(obj, null, 2);
 
-const createNewLocaleMessages = (defaultMessages, locale) => localeMessages => {
-  // recreate every time for default-locale
-  const checkedLocalMessages = locale === 'default' ? {} : localeMessages;
-  const messagesReducer = (acc, cur) =>
-    Object.assign(acc, toMessageObject(checkedLocalMessages, cur));
+const getMessagesOutputPath = () =>
+  path.join(
+    paths.appPath,
+    argv.getArgvValue(['--message-output']) || 'messages'
+  );
 
-  return defaultMessages.reduce(messagesReducer, checkedLocalMessages);
+const getTranslationsOutputPath = () =>
+  path.join(
+    paths.appPath,
+    argv.getArgvValue(['--translations-output']) || 'translations'
+  );
+
+const getLocales = () => {
+  const localesString = argv.getArgvValue(['--locales', '-l', '--languages']);
+  return localesString ? localesString.split(',') : ['en'];
 };
+
+const getDefaultLocale = () => {
+  const defaultLocale = argv.getArgvValue(['--default-locale', '--default']);
+  return defaultLocale || getLocales()[0];
+};
+
+const pTransformFile = bluebird.promisify(babel.transformFile);
 
 const printFinished = () =>
-  console.log('finished translations, they are stored in ' + getOutputPath());
-
-const readDefaultMessagesForFileOnNonFlat = file => {
-  const nonFlatOutputPath = translationFiles.getNonFlatOutputFileDir(
-    getOutputPath(),
-    file
+  console.log(
+    `finished, messages are extracted into ${getMessagesOutputPath()}, translations are updated in ${getTranslationsOutputPath()}`
   );
-  const getOutputFilePath = locale =>
-    translationFiles.getNonFlatOutputFilePath(getOutputPath(), locale, file);
 
-  const getTranslationFile = defaultMessages => locale =>
-    pMkdirp(nonFlatOutputPath)
-      .then(() =>
-        translationFiles.getNonFlatLocaleMessages(getOutputPath(), locale, file)
-      )
-      .then(createNewLocaleMessages(defaultMessages, locale))
-      .then(messages =>
-        pWriteFile(getOutputFilePath(locale), toJson(messages))
-      );
+const babelifyWithExtract = file =>
+  pTransformFile(file, createReactIntlBabelConfig(getMessagesOutputPath()));
 
-  return readReactIntlMessagesFromFile(file).then(
-    defaultMessages =>
-      defaultMessages &&
-      defaultMessages.length > 0 &&
-      Promise.all(getLocales().map(getTranslationFile(defaultMessages)))
+const extractTranslations = () =>
+  manageTranslations({
+    messagesDirectory: getMessagesOutputPath(),
+    translationsDirectory: getTranslationsOutputPath(),
+    languages: getLocales(),
+  });
+
+const getDefaultMessages = () =>
+  Promise.resolve()
+    .then(() => getMessagesOutputPath())
+    .then(translationsManager.readMessageFiles)
+    .then(translationsManager.getDefaultMessages)
+    .then(res => res.messages);
+
+const extractDefaultMessages = () =>
+  getDefaultMessages().then(messages =>
+    translationsManager.createSingleMessagesFile({
+      messages,
+      directory: getTranslationsOutputPath(),
+    })
   );
-};
 
-const flatArray = arr => arr.reduce((acc, cur) => [...acc, ...cur], []);
+const getDefaultWhitelistFilePath = () =>
+  path.join(
+    getTranslationsOutputPath(),
+    `whitelist_${getDefaultLocale()}.json`
+  );
 
-const createNonFlatJsonTree = messages => {
-  const res = {};
-  const recursiveAssign = (key, val) => {
-    let current = res;
-    const keys = key.split('.');
-    keys.pop();
-    keys.forEach(key => {
-      current[key] = current[key] || {};
-      current = current[key];
-    });
-    current[key] = val;
-  };
-
-  Object.keys(messages).forEach(key => recursiveAssign(key, messages[key]));
-  return res;
-};
-
-const writeFlatTranslationFileForLocale = defaultMessages => locale =>
-  pMkdirp(getOutputPath())
-    .then(translationFiles.getFlatLocaleMessages(getOutputPath(), locale))
-    .then(createNewLocaleMessages(defaultMessages, locale))
-    .then(
-      messages => (makeFlatTree() ? messages : createNonFlatJsonTree(messages))
-    )
-    .then(messages =>
-      pWriteFile(
-        translationFiles.getFlatOutputFilePath(getOutputPath(), locale),
-        toJson(messages)
-      )
+// this is necessary to prevent that every key markes as "untranslated"
+const whiteListForDefaultLanguage = () =>
+  getDefaultMessages()
+    .then(messages => Object.keys(messages))
+    .then(messageIds =>
+      pWriteFile(getDefaultWhitelistFilePath(), toJson(messageIds))
     );
-
-const handleFiles = files => {
-  if (!makeFlatFile()) {
-    return Promise.all(files.map(readDefaultMessagesForFileOnNonFlat));
-  }
-
-  return Promise.all(files.map(readReactIntlMessagesFromFile))
-    .then(flatArray)
-    .then(defaultMessages =>
-      Promise.all(
-        getLocales().map(writeFlatTranslationFileForLocale(defaultMessages))
-      )
-    );
-};
 
 pGlob(paths.appSrc + '/**/*.js')
-  .then(handleFiles)
+  .then(files => Promise.all(files.map(babelifyWithExtract)))
+  .then(extractDefaultMessages)
+  .then(whiteListForDefaultLanguage)
+  .then(extractTranslations)
   .then(printFinished)
   .catch(err => {
     console.log('Failed to compile i18n-files.\n');

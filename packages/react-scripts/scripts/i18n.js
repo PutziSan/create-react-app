@@ -67,7 +67,7 @@ const toMessageObject = (localeMessages, message) => ({
 const toJson = obj => JSON.stringify(obj, null, 2);
 
 const createNewLocaleMessages = (defaultMessages, locale) => localeMessages => {
-  // recreate every time
+  // recreate every time for default-locale
   const checkedLocalMessages = locale === 'default' ? {} : localeMessages;
   const messagesReducer = (acc, cur) =>
     Object.assign(acc, toMessageObject(checkedLocalMessages, cur));

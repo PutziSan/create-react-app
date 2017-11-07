@@ -12,12 +12,9 @@ const getBabelTransformOptions = () => ({
     {
       plugins: [
         [
-          'react-intl-auto',
-          {
-            removePrefix: 'app/',
-          },
+          require.resolve('babel-plugin-react-intl'),
+          { messagesDir: './tester/messages' },
         ],
-        require.resolve('babel-plugin-react-intl'),
       ],
     },
     require.resolve('babel-preset-apoly-react-app'),

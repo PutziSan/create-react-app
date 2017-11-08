@@ -28,7 +28,7 @@ you can find the code in the [apoly-customization-tree of the CRA-fork](https://
 ### write messages
 You have to define all your messages external with [`defineMessages`](https://github.com/yahoo/react-intl/wiki/API#definemessages).
 But you can use the shorthand notation (see https://github.com/akameco/babel-plugin-react-intl-auto):
-```
+```js
 const messages = defineMessages({
   welcome: 'Welcome!',
   nameQuestion: 'Your name is {name}?',
@@ -37,18 +37,18 @@ const messages = defineMessages({
 Note: You should not rename the keys later cause this will break existing translations
 ### use messages
 1. You can use the `<I18nMessage>`-Component from the `/extensions/react-intl`-folder:
-   ```
+   ```js
    <I18nMessage message={messages.welcome}/>
    ```
 2. If you need to compute the value, you can use the [`injectIntl`-HOC](https://github.com/yahoo/react-intl/wiki/API#injection-api), this exposes the `intl`-prop to your Component. You can then use the `intl.formatMessage`-method within your enhanced component:
-   ```
+   ```js
    const Component = ({ intl }) => (
      <div>{intl.formatMessage(messages.welcome)}</div>
    );
    export default injectIntl(Component);
    ```
 3. You can use the standard `<FormattedMessage>`-component from react-intl like this:
-   ```
+   ```js
    <FormattedMessage {...messages.welcome} />
    ```
 
@@ -58,7 +58,7 @@ You have to wrap your whole App with one [`<IntlProvider>`-Component](https://gi
 The Component should get the current locale and the messages from your generated JSON-files, if you really want to or have to cause your app is too big, you could further split your messages, [look at this example](https://github.com/yahoo/react-intl/tree/master/examples/nested).
 
 Additionaly you should call  [`addLocaleData`](https://github.com/yahoo/react-intl/wiki/API#addlocaledata) with [the specific localeData](https://github.com/yahoo/react-intl/wiki#loading-locale-data).
-```
+```js
 import { IntlProvider, addLocaleData } from 'react-intl';
 import enLocaleData from 'react-intl/locale-data/en';
 
@@ -75,7 +75,7 @@ const En = ({ children }) => (
 ### handle different languages
 you have to store the currently selected language (via redux, internal state, ...) and set the messages and the locale data dependent on the current locale: 
 below is an async-example with [react-lodable](https://github.com/thejameskyle/react-loadable):
-```
+```js
 import React from 'react';
 import Loadable from 'react-loadable';
 

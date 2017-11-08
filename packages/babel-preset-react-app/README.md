@@ -9,6 +9,9 @@ Please refer to its documentation:
 ## apoly-customization
 this fork adds the [babel-plugin-react-intl-auto](https://github.com/akameco/babel-plugin-react-intl-auto) for a more convenient solution to use i18n with [react-intl](https://github.com/yahoo/react-intl).
 
+### github-repo
+you can find the code in the [apoly-customization-tree of the CRA-fork](https://github.com/PutziSan/create-react-app/tree/apoly-customizations).
+
 ## Usage in Create React App Projects
 
 The easiest way to use this configuration is with [Create React App](https://github.com/facebookincubator/create-react-app), which includes it by default. **You don’t need to install it separately in Create React App projects.**

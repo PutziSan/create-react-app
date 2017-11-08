@@ -36,7 +36,17 @@ const messages = defineMessages({
 ```
 Note: You should not rename the keys later cause this will break existing translations
 ### use messages
-1. You can use the `<I18nMessage>`-Component from the `/extensions/react-intl`-folder:
+1. You can use the [`<FormattedMessage>`-component](https://github.com/yahoo/react-intl/wiki/Components#formattedmessage) from react-intl like this:
+    ```js
+    <FormattedMessage {...messages.welcome} />
+    ```
+   for a more convenient use u could add an helper-component:
+   ```js
+   const I18nMessage = ({ message, tagName, values }) => (
+     <FormattedMessage {...message} values={values} tagName={tagName} />
+   );
+   ```
+   and then use it like so:
    ```js
    <I18nMessage message={messages.welcome}/>
    ```
@@ -46,10 +56,6 @@ Note: You should not rename the keys later cause this will break existing transl
      <div>{intl.formatMessage(messages.welcome)}</div>
    );
    export default injectIntl(Component);
-   ```
-3. You can use the standard `<FormattedMessage>`-component from react-intl like this:
-   ```js
-   <FormattedMessage {...messages.welcome} />
    ```
 
 ## <a name="getting-started"></a>getting started

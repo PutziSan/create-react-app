@@ -2,7 +2,7 @@
   "name": "apoly-react-scripts",
   "version": "1.0.17-forked.11",
   "description": "Configuration and scripts for Create React App.",
-  "repository": "facebookincubator/create-react-app",
+  "repository": "putzisan/create-react-app/tree/apoly-customizations",
   "license": "MIT",
   "engines": {
     "node": ">=6"
@@ -48,7 +48,6 @@
     "glob": "^7.1.2",
     "html-webpack-plugin": "2.29.0",
     "jest": "20.0.4",
-    "mkdirp": "^0.5.1",
     "object-assign": "4.1.1",
     "postcss-flexbugs-fixes": "3.2.0",
     "postcss-loader": "2.0.8",

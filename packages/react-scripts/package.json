@@ -2,7 +2,7 @@
   "name": "apoly-react-scripts",
   "version": "1.0.17-forked.12",
   "description": "Configuration and scripts for Create React App.",
-  "repository": "putzisan/create-react-app/tree/apoly-customizations",
+  "repository": "putzisan/create-react-app",
   "license": "MIT",
   "engines": {
     "node": ">=6"

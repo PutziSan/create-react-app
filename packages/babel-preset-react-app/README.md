@@ -6,6 +6,9 @@ Please refer to its documentation:
 * [Getting Started](https://github.com/facebookincubator/create-react-app/blob/master/README.md#getting-started) – How to create a new app.
 * [User Guide](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md) – How to develop apps bootstrapped with Create React App.
 
+## apoly-customization
+this fork adds the [babel-plugin-react-intl-auto](https://github.com/akameco/babel-plugin-react-intl-auto) for a more convenient solution to use i18n with [react-intl](https://github.com/yahoo/react-intl).
+
 ## Usage in Create React App Projects
 
 The easiest way to use this configuration is with [Create React App](https://github.com/facebookincubator/create-react-app), which includes it by default. **You don’t need to install it separately in Create React App projects.**

@@ -11,7 +11,7 @@ const getWebpackBabelReactIntlPluginDefinition = () => {
     require.resolve('babel-plugin-react-intl-auto'),
     {
       removePrefix: true,
-      filebase: true,
+      filebase: false, // schließt sich sowieso aus...
     },
   ];
 };

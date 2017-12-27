@@ -1,6 +1,6 @@
 {
   "name": "babel-preset-apoly-react-app",
-  "version": "3.1.0-custom.9",
+  "version": "3.1.0-custom.10",
   "description": "Babel preset used by Create React App",
   "repository": "putzisan/create-react-app",
   "license": "MIT",

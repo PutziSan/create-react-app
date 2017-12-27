@@ -66,15 +66,13 @@ const babelifyWithExtract = file =>
   pTransformFile(file, createReactIntlBabelConfig(getMessagesOutputPath()));
 
 const extractTranslations = () =>
-  Promise.resolve()
-    .then(() => pRimraf(getMessagesOutputPath())) // clear meta-messageDir
-    .then(() =>
-      manageTranslations({
-        messagesDirectory: getMessagesOutputPath(),
-        translationsDirectory: getTranslationsOutputPath(),
-        languages: getLocales(),
-      })
-    );
+  Promise.resolve().then(() =>
+    manageTranslations({
+      messagesDirectory: getMessagesOutputPath(),
+      translationsDirectory: getTranslationsOutputPath(),
+      languages: getLocales(),
+    })
+  );
 
 const getDefaultMessages = () =>
   Promise.resolve()
@@ -105,7 +103,9 @@ const whiteListForDefaultLanguage = () =>
       pWriteFile(getDefaultLocaleWhitelistFilePath(), toJson(messageIds))
     );
 
-pGlob(paths.appSrc + '/**/*.js')
+Promise.resolve()
+  .then(() => pRimraf(getMessagesOutputPath())) // clear meta-messageDir
+  .then(() => pGlob(paths.appSrc + '/**/*.js'))
   .then(files => Promise.all(files.map(babelifyWithExtract)))
   .then(extractDefaultMessages)
   .then(whiteListForDefaultLanguage)

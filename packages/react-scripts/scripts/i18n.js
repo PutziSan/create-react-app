@@ -24,6 +24,7 @@ const argv = require('./utils/argv');
 require('../config/env');
 
 const pWriteFile = bluebird.promisify(require('fs').writeFile);
+const pRimraf = bluebird.promisify(require('rimraf'));
 const pGlob = bluebird.promisify(glob);
 
 const manageTranslations = translationsManager.default;
@@ -65,11 +66,15 @@ const babelifyWithExtract = file =>
   pTransformFile(file, createReactIntlBabelConfig(getMessagesOutputPath()));
 
 const extractTranslations = () =>
-  manageTranslations({
-    messagesDirectory: getMessagesOutputPath(),
-    translationsDirectory: getTranslationsOutputPath(),
-    languages: getLocales(),
-  });
+  Promise.resolve()
+    .then(() => pRimraf(getMessagesOutputPath())) // clear meta-messageDir
+    .then(() =>
+      manageTranslations({
+        messagesDirectory: getMessagesOutputPath(),
+        translationsDirectory: getTranslationsOutputPath(),
+        languages: getLocales(),
+      })
+    );
 
 const getDefaultMessages = () =>
   Promise.resolve()

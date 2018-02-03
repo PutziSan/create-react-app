@@ -27,6 +27,9 @@ module.exports = (resolve, rootDir, isEjecting) => {
     testMatch: [
       '<rootDir>/src/**/__tests__/**/*.{js,jsx,mjs}',
       '<rootDir>/src/**/?(*.)(spec|test).{js,jsx,mjs}',
+      // CUSTOM_APOLY_CHANGE to also use tests in packages:
+      '<rootDir>/packages/*/src/**/__tests__/**/*.{js,jsx,mjs}',
+      '<rootDir>/packages/*/src/**/?(*.)(spec|test).{js,jsx,mjs}',
     ],
     testEnvironment: 'node',
     testURL: 'http://localhost',

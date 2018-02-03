@@ -21,6 +21,16 @@ describe('Integration', () => {
       ).to.match(/#feature-css-inclusion\{background:.+;color:.+}/);
     });
 
+    it('css modules inclusion', async () => {
+      const doc = await initDOM('css-modules-inclusion');
+
+      expect(
+        doc.getElementsByTagName('style')[0].textContent.replace(/\s/g, '')
+      ).to.match(
+        /.+__style-module___cssModulesInclusion+\{background:.+;color:.+}/
+      );
+    });
+
     it('image inclusion', async () => {
       const doc = await initDOM('image-inclusion');
 
@@ -59,6 +69,22 @@ describe('Integration', () => {
       expect(doc.getElementById('feature-svg-inclusion').src).to.match(
         /\/static\/media\/logo\..+\.svg$/
       );
+    });
+
+    it('svg component', async () => {
+      const doc = await initDOM('svg-component');
+
+      expect(doc.getElementById('feature-svg-component').textContent).to.equal(
+        ''
+      );
+    });
+
+    it('svg in css', async () => {
+      const doc = await initDOM('svg-in-css');
+
+      expect(
+        doc.getElementsByTagName('style')[0].textContent.replace(/\s/g, '')
+      ).to.match(/\/static\/media\/logo\..+\.svg/);
     });
 
     it('unknown ext inclusion', async () => {

@@ -6,6 +6,7 @@
  */
 'use strict';
 
+/** CUSTOM_CHANGES START **/
 const getWebpackBabelReactIntlPluginDefinition = () => {
   return [
     require.resolve('babel-plugin-react-intl-auto'),
@@ -15,6 +16,7 @@ const getWebpackBabelReactIntlPluginDefinition = () => {
     },
   ];
 };
+/** CUSTOM_CHANGES END **/
 
 const plugins = [
   // Necessary to include regardless of the environment because
@@ -48,7 +50,9 @@ const plugins = [
       regenerator: true,
     },
   ],
+  /** CUSTOM_CHANGES START **/
   getWebpackBabelReactIntlPluginDefinition(),
+  /** CUSTOM_CHANGES END **/
 ];
 
 // This is similar to how `env` works in Babel:

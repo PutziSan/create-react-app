@@ -1,6 +1,6 @@
 {
   "name": "apoly-react-scripts",
-  "version": "1.1.0-forked.2",
+  "version": "1.1.0-forked.3",
   "description": "Configuration and scripts for Create React App.",
   "repository": "putzisan/create-react-app",
   "license": "MIT",
@@ -27,8 +27,7 @@
     "babel-jest": "20.0.3",
     "babel-loader": "7.1.2",
     "babel-plugin-react-intl": "^2.3.1",
-    "babel-plugin-react-intl-auto": "^0.12.1",
-    "babel-preset-apoly-react-app": "^3.1.1-forked.1",
+    "babel-preset-apoly-react-app": "^3.1.1-forked.2",
     "babel-runtime": "6.26.0",
     "bluebird": "^3.5.1",
     "case-sensitive-paths-webpack-plugin": "2.1.1",

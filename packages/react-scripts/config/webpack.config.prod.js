@@ -181,7 +181,9 @@ module.exports = {
             test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
             loader: require.resolve('url-loader'),
             options: {
-              limit: 10000,
+              // CUSTOM_OVERRIDE_START (old was 10000)
+              limit: 10,
+              // CUSTOM_OVERRIDE_END
               name: 'static/media/[name].[hash:8].[ext]',
             },
           },

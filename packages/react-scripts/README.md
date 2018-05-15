@@ -113,10 +113,3 @@ class AsyncLanguageLoadable extends React.Component {
   }
 }
 ```
-## advanced : manage with lokalise
-[lokalise](https://lokalise.co/) gives you the ability to maintain your translations, [they have a free personal plan to start](https://lokalise.co/pricing).
-You can upload the generated `defaultMessages.json` which lays per default in `src/translations/` after you run the `yarn i18n`-command.
-Then you can manage your translations and use their service and at the end download the json-files with the translations and overwrite them in your project in `src/translations/`.
-### automate with CLI and API
-You could use their [CLI-tool](https://docs.lokalise.co/article/44l4f1hiZM-lokalise-cli-tool) to automate the import/export process.
-If you want to integrate the jobs as git-hook or in you CI-integration, you could also use [the lokalise-API](https://lokalise.co/apidocs#export) and import the data to lokalise with every push and download the data with every build.
